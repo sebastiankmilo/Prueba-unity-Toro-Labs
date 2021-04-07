@@ -25,24 +25,36 @@ public class MovimientoParabolico : MonoBehaviour
     GameObject circulo;
     Vector2 Circledisplacement;
 
+    //Variable necesarias para validar la información
+    List<GameObject> labels;
+    List<string> errorsDescription;
+    [SerializeField]
+    GameObject ErrorPanel;
+    [SerializeField]
+    GameObject submitButton;
 
 
+    //Variables necesarias para saber el desempeño en el reto
 
-    bool finish;
+    float Displacement_x;
+    [SerializeField]
+    GameObject FinishPanel;
+
+    bool finish=true;
     // Start is called before the first frame update
     void Start()
     {
         Circledisplacement = Vector2.zero;
-        finish = false;
+         labels = new List<GameObject>()
+    {
+        inputTextInitialVelocity,
+        inputTextInitialLaunchAngle,
+        inputTextHorizonatalExpectedDisplacementByUser
+    };
+        errorsDescription = new List<string>();
+        ErrorPanel.SetActive(false);
 
-        initial_velocity = float.Parse(inputTextInitialVelocity.GetComponent<InputField>().text);
-        initial_launch_angle = float.Parse(inputTextInitialLaunchAngle.GetComponent<InputField>().text);
-        float V_x = initial_velocity * Mathf.Sin(AngleToRadians(initial_launch_angle));
-        float V_y = initial_velocity * Mathf.Cos(AngleToRadians(initial_launch_angle));
-        Velocity = new Vector2(
-            V_x,
-            V_y);
-        Debug.Log(Velocity);
+        
     }
 
     // Update is called once per frame
@@ -51,19 +63,24 @@ public class MovimientoParabolico : MonoBehaviour
 
         if (!finish)
         {
-            time += Time.deltaTime;
-            Debug.Log(time);
-            Debug.Log(circulo.GetComponent<RectTransform>().anchoredPosition);
-            Debug.Log(Displacement(Velocity, time));
+            time += Time.deltaTime*2;
+            
             Circledisplacement = Displacement(Velocity, time);
             if (Circledisplacement.y > 0f)
             {
                 circulo.GetComponent<RectTransform>().anchoredPosition = Circledisplacement;
+                Displacement_x = Circledisplacement.x;
             }
             else
             {
+                Debug.Log(Displacement_x);
                 Debug.Log("Simulación terminada");
                 finish = true;
+                circulo.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+                submitButton.SetActive(true);
+                FinishPanel.SetActive(true);
+
+
             }
         }
          
@@ -73,7 +90,7 @@ public class MovimientoParabolico : MonoBehaviour
     }
     float AngleToRadians(float Angle)
     {
-        return (Angle * Mathf.PI)/180;
+        return (Angle * Mathf.Deg2Rad);
     }
     Vector2 Displacement(Vector2 Velocity,float time )
     {
@@ -84,5 +101,51 @@ public class MovimientoParabolico : MonoBehaviour
             displacement_y
             );
         return displacement;
+    }
+
+    public void StartSimulation()
+    {
+        bool errors=false;
+        errorsDescription = new List<string>();
+        foreach (var label in labels)
+        {
+            //Debug.Log(label.name);
+            label.GetComponentInChildren<Forms>().EmptyInputChecker();
+            string errorDescription = label.GetComponentInChildren<Forms>().Error;
+            //Buscar Errores
+            bool errorActual;
+            errorActual = errorDescription != "" ? true : false;
+            //Debug.Log(errorDescription);
+            errors = errors || errorActual;
+            errorsDescription.Add(errorDescription);
+
+        }
+        if (errors)
+        {
+            
+            ErrorPanel.SetActive(true);
+            ErrorPanel.transform.Find("Description").GetComponent<Text>().text = "";
+            foreach (var error in errorsDescription)
+            {
+                ErrorPanel.transform.Find("Description").GetComponent<Text>().text += " " + error; 
+            }
+
+
+        }
+        else
+        {
+            ErrorPanel.SetActive(false);
+            submitButton.SetActive(false);
+            finish = false;
+            time = 0f;
+            initial_velocity = float.Parse(inputTextInitialVelocity.GetComponentInChildren<InputField>().text);
+            initial_launch_angle = float.Parse(inputTextInitialLaunchAngle.GetComponentInChildren<InputField>().text);
+            float V_x = initial_velocity * Mathf.Cos(AngleToRadians(initial_launch_angle));
+            float V_y = initial_velocity * Mathf.Sin(AngleToRadians(initial_launch_angle));
+            Velocity = new Vector2(
+                V_x,
+                V_y);
+        }        
+
     }
 }
