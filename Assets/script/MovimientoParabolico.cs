@@ -12,9 +12,9 @@ public class MovimientoParabolico : MonoBehaviour
 
     //Datos necesarios para calcular el movimiento parabolico
     [SerializeField]
-    GameObject inputTextInitialVelocity,
-               inputTextInitialLaunchAngle, 
-               inputTextHorizonatalExpectedDisplacementByUser;
+    GameObject InitialVelocity,
+               InitialLaunchAngle, 
+               HorizonatalExpectedDisplacementByUser;
     float initial_velocity, initial_launch_angle;
     const float gravity = 9.8f;
     Vector2 Velocity;
@@ -22,7 +22,10 @@ public class MovimientoParabolico : MonoBehaviour
 
     //Datos necesarios para simular el movimiento parabolico
     [SerializeField]
-    GameObject circulo;
+    GameObject circle;
+    [SerializeField]
+    GameObject CartesianPlane;
+    float diference,widthScreen;
     Vector2 Circledisplacement;
 
     //Variable necesarias para validar la información
@@ -47,9 +50,9 @@ public class MovimientoParabolico : MonoBehaviour
         Circledisplacement = Vector2.zero;
          labels = new List<GameObject>()
     {
-        inputTextInitialVelocity,
-        inputTextInitialLaunchAngle,
-        inputTextHorizonatalExpectedDisplacementByUser
+        InitialVelocity,
+        InitialLaunchAngle,
+        HorizonatalExpectedDisplacementByUser
     };
         errorsDescription = new List<string>();
         ErrorPanel.SetActive(false);
@@ -68,17 +71,31 @@ public class MovimientoParabolico : MonoBehaviour
             Circledisplacement = Displacement(Velocity, time);
             if (Circledisplacement.y > 0f)
             {
-                circulo.GetComponent<RectTransform>().anchoredPosition = Circledisplacement;
+                //Debug.Log(circle.GetComponent<Circle>().BorderScreen);
+                if (!circle.GetComponent<Circle>().BorderScreen)
+                {
+                    circle.GetComponent<RectTransform>().anchoredPosition = Circledisplacement;
+                    widthScreen = Circledisplacement.x;
+                }
+                else
+                {
+
+                    circle.GetComponent<RectTransform>().anchoredPosition = new Vector2(
+                        circle.GetComponent<RectTransform>().anchoredPosition.x, 
+                        Circledisplacement.y
+                        );
+                    diference = (widthScreen -Circledisplacement.x)*2f ; 
+                    CartesianPlane.GetComponent<RectTransform>().anchoredPosition = new Vector2(
+                        diference,
+                        0
+                        );
+                }
+                
                 Displacement_x = Circledisplacement.x;
             }
             else
             {
-                Debug.Log(Displacement_x);
-                Debug.Log("Simulación terminada");
-                finish = true;
-                circulo.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-                submitButton.SetActive(true);
-                FinishPanel.SetActive(true);
+                FinishSimulation();
 
 
             }
@@ -138,8 +155,8 @@ public class MovimientoParabolico : MonoBehaviour
             submitButton.SetActive(false);
             finish = false;
             time = 0f;
-            initial_velocity = float.Parse(inputTextInitialVelocity.GetComponentInChildren<InputField>().text);
-            initial_launch_angle = float.Parse(inputTextInitialLaunchAngle.GetComponentInChildren<InputField>().text);
+            initial_velocity = float.Parse(InitialVelocity.GetComponentInChildren<InputField>().text);
+            initial_launch_angle = float.Parse(InitialLaunchAngle.GetComponentInChildren<InputField>().text);
             float V_x = initial_velocity * Mathf.Cos(AngleToRadians(initial_launch_angle));
             float V_y = initial_velocity * Mathf.Sin(AngleToRadians(initial_launch_angle));
             Velocity = new Vector2(
@@ -148,4 +165,33 @@ public class MovimientoParabolico : MonoBehaviour
         }        
 
     }
+    void FinishSimulation ()
+    {
+        Debug.Log("Simulación terminada");
+        Debug.Log(Displacement_x);
+        Debug.Log(HorizonatalExpectedDisplacementByUser.GetComponentInChildren<InputField>().text);
+        
+        finish = true;
+        
+        FinishPanel.SetActive(true);
+        bool win =Mathf.Abs( Displacement_x - float.Parse(HorizonatalExpectedDisplacementByUser.GetComponentInChildren<InputField>().text))< Displacement_x*0.05f;
+        string FinalMessage = win ? "Felicitaciones \nAcertaste" : "Más suerte para la proxima";
+        FinishPanel.transform.Find("title").GetComponent<Text>().text=FinalMessage;
+        
+        /*string info = "Distancia recorrida por el circulo en x: " + Displacement_x.ToString() + "m\n" +
+            "Distancia predicha por el usuario: " + HorizonatalExpectedDisplacementByUser.GetComponentInChildren<InputField>().text+"m";
+        FinishPanel.transform.Find("Description").GetComponent<Text>().text = info;*/
+        
+        
+        circle.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        CartesianPlane.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        InitialVelocity.GetComponentInChildren<InputField>().text="";
+        InitialLaunchAngle.GetComponentInChildren<InputField>().text="";
+        HorizonatalExpectedDisplacementByUser.GetComponentInChildren<InputField>().text = "";
+
+        circle.GetComponent<Circle>().BorderScreen=false;
+        submitButton.SetActive(true);
+    }
+
+    
 }
