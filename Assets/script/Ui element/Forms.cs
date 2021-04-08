@@ -72,14 +72,18 @@ public class Forms : MonoBehaviour
 
     void InitialVelocityError(float velocity)
     {
-        if (velocity < 0)
+        if (velocity < 0 )
         {
             _error = "La velocidad debe ser positiva";
             
 
             
         }
-        else
+        else if (velocity > 100000)
+        {
+            _error = "La velocidad maxima permitida es de 100000";
+        }
+        else 
         {
             _error = "";
         }

@@ -32,6 +32,8 @@ public class MovimientoParabolico : MonoBehaviour
     List<Vector2> plot, XIndicator;
     [SerializeField]
     GameObject XPosition;
+    [SerializeField]
+    Text Xmax;
     Vector2 Circledisplacement;
 
     //Variable necesarias para validar la información
@@ -82,17 +84,25 @@ public class MovimientoParabolico : MonoBehaviour
             float fitVelocity = 2;
             if (Velocity.magnitude < 100)
             {
-                fitVelocity= 2;
+                fitVelocity = Mathf.CeilToInt(100 / Velocity.magnitude);
             }
-            else if (Velocity.magnitude < 500)
+            //else if (Velocity.magnitude < 500)
+            //{
+            //    fitVelocity = 1;
+            //}
+            //else if (Velocity.magnitude < 1000)
+            //{
+            //    fitVelocity = 0.5f;
+            //}
+            else
             {
-                fitVelocity = 1;
+                fitVelocity = 100 / Velocity.magnitude;
             }
-            else if (Velocity.magnitude < 1000)
-            {
-                fitVelocity = 0.2f;
-            }
-            time += Time.deltaTime * (1 + circle.GetComponent<Circle>().Count);
+            //fitVelocity = Mathf.CeilToInt(100 / Velocity.magnitude);
+            Circledisplacement = Displacement(Velocity, time);
+            int modified = Mathf.CeilToInt(float.Parse(Xmax.text) / 1000);
+            Debug.Log(modified);
+            time += Time.deltaTime *fitVelocity* (modified + circle.GetComponent<Circle>().Count);
             
             
             Circledisplacement = Displacement(Velocity, time);
