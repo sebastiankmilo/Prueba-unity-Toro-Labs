@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.UI.Extensions;
 
 public class MovimientoParabolico : MonoBehaviour
     
@@ -25,7 +26,12 @@ public class MovimientoParabolico : MonoBehaviour
     GameObject circle;
     [SerializeField]
     GameObject CartesianPlane;
-    float diference,widthScreen;
+    
+    public UILineRenderer line,XDisplacementIndicator;
+    [SerializeField]
+    List<Vector2> plot, XIndicator;
+    [SerializeField]
+    GameObject XPosition;
     Vector2 Circledisplacement;
 
     //Variable necesarias para validar la información
@@ -44,19 +50,26 @@ public class MovimientoParabolico : MonoBehaviour
     GameObject FinishPanel;
 
     bool finish=true;
+
+    //Variables necesarias para resetear el entorno
+    
+    [SerializeField]
     // Start is called before the first frame update
     void Start()
     {
         Circledisplacement = Vector2.zero;
          labels = new List<GameObject>()
-    {
-        InitialVelocity,
-        InitialLaunchAngle,
-        HorizonatalExpectedDisplacementByUser
-    };
+        {
+            InitialVelocity,
+            InitialLaunchAngle,
+            HorizonatalExpectedDisplacementByUser
+        };
         errorsDescription = new List<string>();
         ErrorPanel.SetActive(false);
 
+        plot.Add(Vector2.zero);
+        
+        
         
     }
 
@@ -66,32 +79,43 @@ public class MovimientoParabolico : MonoBehaviour
 
         if (!finish)
         {
-            time += Time.deltaTime*2;
+            float fitVelocity = 2;
+            if (Velocity.magnitude < 100)
+            {
+                fitVelocity= 2;
+            }
+            else if (Velocity.magnitude < 500)
+            {
+                fitVelocity = 1;
+            }
+            else if (Velocity.magnitude < 1000)
+            {
+                fitVelocity = 0.2f;
+            }
+            time += Time.deltaTime * (1 + circle.GetComponent<Circle>().Count);
+            
             
             Circledisplacement = Displacement(Velocity, time);
+
+            plot.Add(Circledisplacement);
+            XIndicator.Add(new Vector2(
+                Circledisplacement.x,
+                XDisplacementIndicator.gameObject.GetComponent<RectTransform>().anchorMin.y
+                ));
+
+            //Paso matriz con vectores de posición para renderizar
+            XDisplacementIndicator.Points = XIndicator.ToArray();
+            line.Points = plot.ToArray();
+            
             if (Circledisplacement.y > 0f)
             {
-                //Debug.Log(circle.GetComponent<Circle>().BorderScreen);
-                if (!circle.GetComponent<Circle>().BorderScreen)
-                {
-                    circle.GetComponent<RectTransform>().anchoredPosition = Circledisplacement;
-                    widthScreen = Circledisplacement.x;
-                }
-                else
-                {
-
-                    circle.GetComponent<RectTransform>().anchoredPosition = new Vector2(
-                        circle.GetComponent<RectTransform>().anchoredPosition.x, 
-                        Circledisplacement.y
-                        );
-                    diference = (widthScreen -Circledisplacement.x)*2f ; 
-                    CartesianPlane.GetComponent<RectTransform>().anchoredPosition = new Vector2(
-                        diference,
-                        0
-                        );
-                }
-                
-                Displacement_x = Circledisplacement.x;
+                circle.GetComponent<RectTransform>().anchoredPosition = Circledisplacement;
+                XPosition.GetComponent<Text>().text = Circledisplacement.x.ToString();
+                XPosition.GetComponent<RectTransform>().anchoredPosition = new Vector2(
+                    Circledisplacement.x,
+                    XPosition.GetComponent<RectTransform>().anchoredPosition.y
+                    );
+               
             }
             else
             {
@@ -177,21 +201,29 @@ public class MovimientoParabolico : MonoBehaviour
         bool win =Mathf.Abs( Displacement_x - float.Parse(HorizonatalExpectedDisplacementByUser.GetComponentInChildren<InputField>().text))< Displacement_x*0.05f;
         string FinalMessage = win ? "Felicitaciones \nAcertaste" : "Más suerte para la proxima";
         FinishPanel.transform.Find("title").GetComponent<Text>().text=FinalMessage;
-        
+
+        plot.Clear();
+        XIndicator.Clear();
+
         /*string info = "Distancia recorrida por el circulo en x: " + Displacement_x.ToString() + "m\n" +
             "Distancia predicha por el usuario: " + HorizonatalExpectedDisplacementByUser.GetComponentInChildren<InputField>().text+"m";
         FinishPanel.transform.Find("Description").GetComponent<Text>().text = info;*/
-        
-        
-        circle.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-        CartesianPlane.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
-        InitialVelocity.GetComponentInChildren<InputField>().text="";
-        InitialLaunchAngle.GetComponentInChildren<InputField>().text="";
-        HorizonatalExpectedDisplacementByUser.GetComponentInChildren<InputField>().text = "";
 
-        circle.GetComponent<Circle>().BorderScreen=false;
-        submitButton.SetActive(true);
+        //Resetear entorno de simulación
+        //circle.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        //CartesianPlane.GetComponent<RectTransform>().anchoredPosition = Vector2.zero;
+        //InitialVelocity.GetComponentInChildren<InputField>().text="";
+        //InitialLaunchAngle.GetComponentInChildren<InputField>().text="";
+        //HorizonatalExpectedDisplacementByUser.GetComponentInChildren<InputField>().text = "";
+
+        //circle.GetComponent<Circle>().BorderScreen=false;
+        //submitButton.SetActive(true);
     }
 
+    void escale (int potencia)
+    {
+        Debug.Log(potencia);
+    }
     
+
 }

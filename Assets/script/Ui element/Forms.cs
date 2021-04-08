@@ -158,8 +158,8 @@ public class Forms : MonoBehaviour
         }
         finally
         {
-            Debug.Log(_error);
-            Debug.Log("vamos a renderizar el mensaje de error");
+            //Debug.Log(_error);
+            //Debug.Log("vamos a renderizar el mensaje de error");
             ErrorRender();
         }
     }
