@@ -10,7 +10,7 @@ public class Circle : MonoBehaviour
     [SerializeField] Text Ymax, Ymiddle, Xmax, Xmiddle;
     public UILineRenderer line, XDisplacementIndicator;
     GameObject X;
-    public int Count { get => _count; }
+    public int Count { get => _count; set => _count = value; }
     int _count=0;
     public bool BorderScreen { 
         get => _borderScreen;

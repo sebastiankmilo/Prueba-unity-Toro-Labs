@@ -36,6 +36,8 @@ public class FinishPanel : MonoBehaviour
 
         ContainerCircle.GetComponent<RectTransform>().localScale = Vector3.one;
         circle.transform.Find("border").GetComponent<RectTransform>().localScale = new Vector3(0.5f, 0.5f, 1);
+        circle.GetComponent<Circle>().Count = 0;
+        
         line.Points = new Vector2[0];
         line.LineThickness = 10;
 

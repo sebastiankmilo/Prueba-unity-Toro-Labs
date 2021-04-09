@@ -125,7 +125,9 @@ public class MovimientoParabolico : MonoBehaviour
                     Circledisplacement.x,
                     XPosition.GetComponent<RectTransform>().anchoredPosition.y
                     );
-               
+                Displacement_x = Circledisplacement.x;
+
+
             }
             else
             {
@@ -206,7 +208,8 @@ public class MovimientoParabolico : MonoBehaviour
         Debug.Log(HorizonatalExpectedDisplacementByUser.GetComponentInChildren<InputField>().text);
         
         finish = true;
-        
+        Debug.Log(Displacement_x - float.Parse(HorizonatalExpectedDisplacementByUser.GetComponentInChildren<InputField>().text));
+        Debug.Log(Displacement_x * 0.05f);
         FinishPanel.SetActive(true);
         bool win =Mathf.Abs( Displacement_x - float.Parse(HorizonatalExpectedDisplacementByUser.GetComponentInChildren<InputField>().text))< Displacement_x*0.05f;
         string FinalMessage = win ? "Felicitaciones \nAcertaste" : "Más suerte para la proxima";
@@ -214,7 +217,7 @@ public class MovimientoParabolico : MonoBehaviour
 
         plot.Clear();
         XIndicator.Clear();
-
+        Circledisplacement.x = 0f;
         /*string info = "Distancia recorrida por el circulo en x: " + Displacement_x.ToString() + "m\n" +
             "Distancia predicha por el usuario: " + HorizonatalExpectedDisplacementByUser.GetComponentInChildren<InputField>().text+"m";
         FinishPanel.transform.Find("Description").GetComponent<Text>().text = info;*/
